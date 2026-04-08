@@ -28,15 +28,28 @@ FEATURE_COLS = None
 def load_models():
     """Load models at startup with error handling"""
     global clf, reg_prob, reg_qty, le_mat, le_scen, FEATURE_COLS
+
+    def unwrap(model):
+        return model[0] if isinstance(model, tuple) else model
+
     try:
-        clf       = joblib.load(ARTIFACTS_DIR / "model_shortage_classifier.pkl")
-        reg_prob  = joblib.load(ARTIFACTS_DIR / "model_shortage_probability.pkl")
-        reg_qty   = joblib.load(ARTIFACTS_DIR / "model_order_qty_forecast.pkl")
-        le_mat    = joblib.load(ARTIFACTS_DIR / "label_encoder_material.pkl")
-        le_scen   = joblib.load(ARTIFACTS_DIR / "label_encoder_scenario.pkl")
+        clf = unwrap(joblib.load(ARTIFACTS_DIR / "model_shortage_classifier.pkl"))
+        reg_prob = unwrap(joblib.load(ARTIFACTS_DIR / "model_shortage_probability.pkl"))
+        reg_qty = unwrap(joblib.load(ARTIFACTS_DIR / "model_order_qty_forecast.pkl"))
+
+        le_mat = joblib.load(ARTIFACTS_DIR / "label_encoder_material.pkl")
+        le_scen = joblib.load(ARTIFACTS_DIR / "label_encoder_scenario.pkl")
+
         with open(ARTIFACTS_DIR / "feature_columns.json") as f:
             FEATURE_COLS = json.load(f)
+
+       
+        print("clf type:", type(clf))
+        print("reg_prob type:", type(reg_prob))
+        print("reg_qty type:", type(reg_qty))
+
         print("✅ All models loaded successfully")
+
     except Exception as e:
         print(f"❌ Error loading models: {e}")
         raise
