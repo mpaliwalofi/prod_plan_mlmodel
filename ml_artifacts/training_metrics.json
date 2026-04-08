@@ -1,24 +1,14 @@
 {
-  "model1_classifier": {
-    "roc_auc": 1.0,
-    "accuracy": 1.0,
-    "f1_shortage": 1.0
+  "model_order_qty_forecast": {
+    "mae": 13.8765,
+    "rmse": 22.9202,
+    "r2": 0.9724
   },
-  "model2_probability": {
-    "mae": 0.08224384646807834,
-    "r2": 0.7311233506179562
+  "model_shortage_classifier": {
+    "roc_auc": 1.0
   },
-  "model3_order_qty": {
-    "mae": 125.0135872221402,
-    "mape": 54.220109200030045,
-    "r2": -0.1365751777558719,
-    "selected_features": 32,
-    "best_params": {
-      "learning_rate": 0.05,
-      "max_depth": 4,
-      "min_samples_leaf": 7,
-      "n_estimators": 50,
-      "subsample": 0.7
-    }
+  "model_shortage_probability": {
+    "mae": 0.0836,
+    "roc_auc": 1.0
   }
 }
