@@ -1,8 +1,3 @@
-"""
-api_server.py - FastAPI wrapper for ML demand forecasting models
-Run: uvicorn api_server:app --host 0.0.0.0 --port 8000
-"""
-
 import json
 import joblib
 import numpy as np
@@ -16,7 +11,7 @@ app = FastAPI(title="Demand Forecast ML API", version="1.0")
 
 ARTIFACTS_DIR = Path("ml_artifacts")
 
-# Global model variables (loaded on startup)
+# Global model variables
 clf = None
 reg_prob = None
 reg_qty = None
@@ -24,21 +19,17 @@ le_mat = None
 le_scen = None
 FEATURE_COLS = None
 
+
 @app.on_event("startup")
 def load_models():
-    """Load models at startup with error handling"""
     global clf, reg_prob, reg_qty, le_mat, le_scen, FEATURE_COLS
 
-    # ✅ FIXED unwrap function
     def unwrap(model):
-        # Keep unwrapping until we get actual model
+        # unwrap nested tuple/list/dict
         while isinstance(model, (tuple, list)):
             model = model[0]
-
-        # If dict, take first value
         if isinstance(model, dict):
             model = list(model.values())[0]
-
         return model
 
     try:
@@ -52,31 +43,11 @@ def load_models():
         with open(ARTIFACTS_DIR / "feature_columns.json") as f:
             FEATURE_COLS = json.load(f)
 
-        print("clf type:", type(clf))
-        print("reg_prob type:", type(reg_prob))
-        print("reg_qty type:", type(reg_qty))
-
-        print("✅ All models loaded successfully")
+        print("✅ Models loaded successfully")
 
     except Exception as e:
         print(f"❌ Error loading models: {e}")
         raise
-
-class ReplenishmentRecord(BaseModel):
-    material_no: Optional[str] = None
-    week_no: Optional[int] = None
-    stock_level: Optional[float] = None
-    reorder_point: Optional[float] = None
-    safety_stock: Optional[float] = None
-    supplier_otif_pct: Optional[float] = None
-    supplier_lead_time_days: Optional[float] = None
-    total_ordered: Optional[float] = None
-    avg_scrap_rate: Optional[float] = None
-    scrap_risk_avg: Optional[float] = None
-    avg_defect_rate: Optional[float] = None
-    standard_batch_qty: Optional[float] = None
-    scenario: Optional[str] = None
-    # Add more fields as needed
 
 
 class PredictRequest(BaseModel):
@@ -103,6 +74,7 @@ def preprocess(records: List[Dict]) -> tuple:
     scrap_rate = col("avg_scrap_rate")
     batch_qty = col("standard_batch_qty", 1).replace(0, 1)
 
+    # Feature engineering
     df["stock_buffer_ratio"] = (stock - reorder) / (reorder + 1)
     df["stock_vs_safety"] = stock - safety
     df["otif_gap"] = 100 - otif
@@ -116,7 +88,7 @@ def preprocess(records: List[Dict]) -> tuple:
     df["shortage_prob_lag1"] = 0
     df["total_ordered_lag1"] = total_ordered
 
-    # Encode categoricals
+    # Encode material
     if "material_no" in df.columns:
         known = set(le_mat.classes_)
         df["material_no"] = df["material_no"].astype(str).apply(
@@ -124,22 +96,23 @@ def preprocess(records: List[Dict]) -> tuple:
         )
         df["material_encoded"] = le_mat.transform(df["material_no"])
 
-    scenario_col = next(
-        (c for c in df.columns if "scenario" in c and "encoded" not in c), None
-    )
-    if scenario_col:
+    # Encode scenario
+    if "scenario" in df.columns:
         known = set(le_scen.classes_)
-        df[scenario_col] = df[scenario_col].astype(str).apply(
+        df["scenario"] = df["scenario"].astype(str).apply(
             lambda x: x if x in known else le_scen.classes_[0]
         )
-        df["scenario_encoded"] = le_scen.transform(df[scenario_col])
+        df["scenario_encoded"] = le_scen.transform(df["scenario"])
 
-    # Build feature matrix
-    numeric_df = df.select_dtypes(include=["number"])
-    for c in FEATURE_COLS:
-        if c not in numeric_df.columns:
-            numeric_df[c] = 0
-    X = numeric_df[FEATURE_COLS].fillna(0)
+    # ✅ FINAL FIXED FEATURE MATRIX
+    X = df.copy()
+
+    for col in FEATURE_COLS:
+        if col not in X.columns:
+            X[col] = 0
+
+    X = X[FEATURE_COLS].fillna(0)
+
     return df, X
 
 
@@ -147,6 +120,7 @@ def preprocess(records: List[Dict]) -> tuple:
 def predict(request: PredictRequest):
     try:
         df, X = preprocess(request.records)
+
         shortage_flags = clf.predict(X).tolist()
         flag_probs = clf.predict_proba(X)[:, 1].tolist()
         shortage_probs = reg_prob.predict(X).clip(0, 1).tolist()
@@ -162,7 +136,9 @@ def predict(request: PredictRequest):
                 "ml_shortage_probability": round(shortage_probs[i], 4),
                 "ml_forecast_qty": order_qtys[i],
             })
+
         return {"predictions": preds}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -179,18 +155,3 @@ def metrics():
         with open(metrics_path) as f:
             return json.load(f)
     return {"error": "metrics not found"}
-
-
-@app.post("/retrain")
-def retrain():
-    """Trigger retraining from within n8n or a cron job."""
-    import subprocess
-    result = subprocess.run(
-        ["python", "demand_forecast_ml_pipeline.py", "--mode", "train"],
-        capture_output=True, text=True
-    )
-    return {
-        "status": "retrained",
-        "stdout": result.stdout[-2000:],
-        "returncode": result.returncode
-    }
