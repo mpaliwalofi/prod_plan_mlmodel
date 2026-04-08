@@ -25,7 +25,6 @@ def load_models():
     global clf, reg_prob, reg_qty, le_mat, le_scen, FEATURE_COLS
 
     def unwrap(model):
-        # unwrap nested tuple/list/dict
         while isinstance(model, (tuple, list)):
             model = model[0]
         if isinstance(model, dict):
@@ -104,14 +103,16 @@ def preprocess(records: List[Dict]) -> tuple:
         )
         df["scenario_encoded"] = le_scen.transform(df["scenario"])
 
-    # ✅ FINAL FIXED FEATURE MATRIX
-    X = df.copy()
+    # ✅ Build feature matrix using ONLY training columns — fixed indentation
+    X = pd.DataFrame(columns=FEATURE_COLS)
 
-    for col in FEATURE_COLS:
-        if col not in X.columns:
-            X[col] = 0
+    for feature_col in FEATURE_COLS:
+        if feature_col in df.columns:
+            X[feature_col] = df[feature_col].values
+        else:
+            X[feature_col] = 0
 
-    X = X[FEATURE_COLS].fillna(0)
+    X = X.fillna(0).astype(float)  # ensure numeric dtype for model compatibility
 
     return df, X
 
