@@ -631,9 +631,14 @@ def train():
     # ── Save artifacts ──
     joblib.dump(le_material, MODEL_PATHS["le_material"])
     joblib.dump(le_scenario, MODEL_PATHS["le_scenario"])
+    feature_cols_dict = {
+        "regression": feature_cols,      # used by GBR (order qty)
+        "classifier": feature_cols,      # used by RFC (shortage flag)
+        "probability": feature_cols,     # used by LR (shortage prob)
+    }
 
     with open(MODEL_PATHS["feature_cols"], "w") as f:
-        json.dump(feature_cols, f, indent=2)
+        json.dump(feature_cols_dict, f, indent=2)
 
     with open(MODEL_PATHS["metrics"], "w") as f:
         json.dump(metrics, f, indent=2)
