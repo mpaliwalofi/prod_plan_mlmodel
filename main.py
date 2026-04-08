@@ -30,7 +30,15 @@ def load_models():
     global clf, reg_prob, reg_qty, le_mat, le_scen, FEATURE_COLS
 
     def unwrap(model):
-        return model[0] if isinstance(model, tuple) else model
+    # Keep unwrapping until we get actual model
+    while isinstance(model, (tuple, list)):
+        model = model[0]
+
+    # If dict, take first value
+    if isinstance(model, dict):
+        model = list(model.values())[0]
+
+    return model
 
     try:
         clf = unwrap(joblib.load(ARTIFACTS_DIR / "model_shortage_classifier.pkl"))
