@@ -1,0 +1,11 @@
+supplier_id,supplier_name,country,category,contact_email,contract_start,contract_end,avg_lead_time_days,otif_pct,scrap_contribution_pct,rework_contribution_pct,risk_score_m5
+SUP-07,Precision Metal Works GmbH,Germany,Metal Components,contact@pmw-gmbh.de,2022-01-01,2026-12-31,14,78,14.2,6.8,72
+SUP-03,Industrial Components Ltd,United Kingdom,Mechanical Parts,supply@icl-uk.com,2021-06-01,2025-06-30,11,84,11.8,5.2,58
+SUP-11,Alpine Materials AG,Switzerland,Raw Materials,orders@alpine-mat.ch,2023-01-01,2026-12-31,9,89,8.4,4.1,42
+SUP-15,Euro Parts Manufacturing,Poland,Fabricated Parts,procurement@europarts.pl,2022-03-01,2026-03-31,8,92,6.2,3.4,35
+SUP-02,Premium Steel Solutions,Germany,Steel & Alloys,sales@premiumsteel.de,2020-01-01,2027-12-31,7,95,4.8,2.9,28
+SUP-18,Quality Components Inc,Netherlands,Electronic Components,supply@qci.nl,2023-06-01,2026-06-30,6,96,3.9,2.1,22
+SUP-05,Reliable Materials Group,France,Composite Materials,orders@rmg-france.fr,2021-09-01,2025-09-30,6,97,3.2,1.8,18
+SUP-09,Excellence Manufacturing,Czech Republic,Precision Parts,info@excellence-mfg.cz,2022-07-01,2026-07-31,5,98,2.6,1.4,15
+SUP-12,FastTrack Supplies BV,Belgium,Fasteners & Fixings,supply@fasttrack.be,2023-01-01,2026-12-31,6,96,3.5,1.9,20
+SUP-21,Nordic Industrial AS,Norway,Hydraulic Components,orders@nordicindustrial.no,2022-04-01,2025-04-30,8,91,5.1,2.7,31

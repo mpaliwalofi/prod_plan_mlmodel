@@ -1,0 +1,12 @@
+machine_id,machine_name,work_centre,machine_type,manufacturer,last_calibration_date,calibration_interval_days,last_maintenance_date,maintenance_interval_days,status,capacity_units_per_hr,operator_skill_required
+MC-01,CNC Lathe Unit 1,WC-01,CNC Lathe,DMG Mori,2026-03-15,90,2026-03-30,30,Active,12,Level-2
+MC-02,CNC Lathe Unit 2,WC-01,CNC Lathe,DMG Mori,2026-02-18,90,2026-03-10,30,Active,12,Level-2
+MC-03,Hydraulic Press 3,WC-04,Hydraulic Press,Schuler AG,2026-03-19,90,2026-03-22,30,Active,8,Level-3
+MC-04,Hydraulic Press 4,WC-04,Hydraulic Press,Schuler AG,2026-03-06,90,2026-03-15,30,Active,8,Level-3
+MC-05,Milling Centre 5,WC-07,CNC Milling,Haas Automation,2026-03-25,90,2026-04-01,30,Active,10,Level-2
+MC-07,Milling Centre 7,WC-07,CNC Milling,Haas Automation,2026-03-19,90,2026-03-19,30,Active,10,Level-2
+MC-06,Inspection CMM,WC-09,CMM,Zeiss,2026-03-29,90,2026-04-03,30,Active,20,Level-3
+MC-11,Welding Station 11,WC-09,MIG Welder,Lincoln Electric,2026-02-18,90,2026-03-07,30,Active,6,Level-3
+MC-09,Assembly Robot 9,WC-12,Robotic Assembly,KUKA,2026-03-29,90,2026-03-29,30,Active,15,Level-1
+MC-15,Surface Grinder 15,WC-15,Surface Grinder,Okamoto,2026-03-25,90,2026-03-26,30,Active,9,Level-2
+MC-08,Assembly Station 8,WC-ASSM-03,Assembly,Bosch Rexroth,2026-02-05,90,2026-02-20,30,Breakdown,7,Level-2

@@ -1,0 +1,13 @@
+material_no,material_name,material_group,primary_supplier_id,unit_cost_eur,currency,standard_batch_qty,unit_of_measure,reorder_point,safety_stock,shelf_life_days
+M-1847,Steel Bracket Assembly,Metal Components,SUP-02,48.5,EUR,100,EA,200,50,730
+M-2104,Hydraulic Valve Unit,Mechanical Parts,SUP-07,124.0,EUR,50,EA,100,25,1825
+M-1192,Precision Shaft 40mm,Metal Components,SUP-03,32.75,EUR,200,EA,400,100,1825
+M-3421,Control Module PCB,Electronic Components,SUP-18,210.0,EUR,25,EA,50,10,365
+M-2047,Aluminium Frame Profile,Raw Materials,SUP-11,67.2,EUR,150,EA,300,75,1825
+M-4182,Rubber Seal Kit,Composite Materials,SUP-05,15.9,EUR,500,EA,1000,250,545
+M-5501,Drive Shaft Assembly,Precision Parts,SUP-09,185.0,EUR,30,EA,60,15,1825
+M-3310,Bearing Set 6204,Fasteners & Fixings,SUP-12,22.4,EUR,300,EA,600,150,1825
+M-6612,Wiring Harness 12V,Electronic Components,SUP-18,89.0,EUR,75,EA,150,40,365
+M-2890,Stainless Pipe 50mm,Steel & Alloys,SUP-02,41.6,EUR,200,EA,400,100,1825
+M-7741,Pneumatic Cylinder,Hydraulic Components,SUP-21,156.0,EUR,40,EA,80,20,1825
+M-4455,Injection Moulded Casing,Fabricated Parts,SUP-15,28.3,EUR,250,EA,500,125,730
