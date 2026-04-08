@@ -29,16 +29,17 @@ def load_models():
     """Load models at startup with error handling"""
     global clf, reg_prob, reg_qty, le_mat, le_scen, FEATURE_COLS
 
+    # ✅ FIXED unwrap function
     def unwrap(model):
-    # Keep unwrapping until we get actual model
-    while isinstance(model, (tuple, list)):
-        model = model[0]
+        # Keep unwrapping until we get actual model
+        while isinstance(model, (tuple, list)):
+            model = model[0]
 
-    # If dict, take first value
-    if isinstance(model, dict):
-        model = list(model.values())[0]
+        # If dict, take first value
+        if isinstance(model, dict):
+            model = list(model.values())[0]
 
-    return model
+        return model
 
     try:
         clf = unwrap(joblib.load(ARTIFACTS_DIR / "model_shortage_classifier.pkl"))
@@ -51,7 +52,6 @@ def load_models():
         with open(ARTIFACTS_DIR / "feature_columns.json") as f:
             FEATURE_COLS = json.load(f)
 
-       
         print("clf type:", type(clf))
         print("reg_prob type:", type(reg_prob))
         print("reg_qty type:", type(reg_qty))
@@ -61,7 +61,6 @@ def load_models():
     except Exception as e:
         print(f"❌ Error loading models: {e}")
         raise
-
 
 class ReplenishmentRecord(BaseModel):
     material_no: Optional[str] = None
