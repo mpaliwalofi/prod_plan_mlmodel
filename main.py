@@ -78,8 +78,71 @@ def load_models():
 
 
 # Schemas
+class RecordInput(BaseModel):
+    """
+    Input schema for a single prediction record.
+    All fields from merged tables are required or have sensible defaults.
+    """
+    # Core identifiers (required)
+    material_no: str
+    week_no: int
+    scenario: str
+
+    # From demand_forecast_sales (required/defaults)
+    forecast_qty: float
+    historical_avg_qty: float = 180.0
+    seasonal_index: float = 1.0
+    deviation_flag: int = 0
+    confidence_score: float = 0.8
+    supplier_lead_time_days: int = 7
+
+    # From material_replenishment (CRITICAL - previously missing!)
+    stock_level: float  # REQUIRED - no default to prevent silent errors
+    replenishment_order_qty: float  # REQUIRED - no default to prevent silent errors
+    supplier_otif_pct: float = 85.0
+
+    # From material_master
+    reorder_point: float = 0.0
+    safety_stock: float = 0.0
+    standard_batch_qty: float = 0.0
+    unit_cost_eur: float = 0.0
+
+    # From supplier_master
+    otif_pct: float = 85.0
+    avg_lead_time_days: int = 7
+    risk_score_m5: float = 50.0
+    scrap_contribution_pct: float = 0.0
+
+    # From production_orders (aggregated)
+    avg_start_delay: float = 0.0
+    avg_finish_delay: float = 0.0
+    avg_overload_prob: float = 0.0
+    avg_throughput_dev: float = 0.0
+    n_orders: int = 1
+
+    # From scrap_quality (aggregated)
+    avg_defect_rate: float = 0.0
+    avg_scrap_rate: float = 0.0
+    avg_scrap_risk: float = 0.0
+    total_scrap_cost: float = 0.0
+
+    # From customer_order_master (aggregated) - NEW
+    total_requested_qty: float = 0.0
+    total_confirmed_qty: float = 0.0
+    n_customer_orders: int = 0
+    vip_order_count: int = 0
+    at_risk_order_count: int = 0
+
+    # From work_centre_utilization (aggregated by week) - NEW
+    avg_wc_utilization: float = 70.0
+    avg_wc_downtime: float = 0.0
+    avg_wc_delay: float = 0.0
+    avg_wc_overload: float = 0.0
+    max_wc_utilization: float = 85.0
+
+
 class PredictRequest(BaseModel):
-    records: List[Dict[str, Any]]
+    records: List[RecordInput]
 
 
 class PredictResponse(BaseModel):
@@ -92,12 +155,13 @@ def safe_get(df: pd.DataFrame, col: str, default=0) -> pd.Series:
     return df[col] if col in df.columns else pd.Series(default, index=df.index)
 
 
-def preprocess(records: List[Dict]) -> Dict[str, pd.DataFrame]:
+def preprocess(records: List[RecordInput]) -> Dict[str, pd.DataFrame]:
     """
     Build feature matrices for regression and shortage models.
     Includes critical business feature: demand_gap
     """
-    df = pd.DataFrame(records)
+    # Convert Pydantic models to dicts
+    df = pd.DataFrame([record.model_dump() for record in records])
     df.columns = df.columns.str.strip().str.lower().str.replace(" ", "_", regex=False)
 
     # Extract raw fields
@@ -167,6 +231,25 @@ def preprocess(records: List[Dict]) -> Dict[str, pd.DataFrame]:
     df["quality_risk_score"] = avg_scrap.fillna(0) + avg_defect.fillna(0)
     df["supplier_risk_flag"] = ((otif < 85) | (risk_m5 > 60)).astype(int)
     df["delay_signal"] = start_delay.fillna(0) + finish_delay.fillna(0)
+
+    # NEW: Customer order derived features
+    total_req_qty = safe_get(df, "total_requested_qty", 0)
+    total_conf_qty = safe_get(df, "total_confirmed_qty", 0)
+    n_cust_orders = safe_get(df, "n_customer_orders", 0)
+    vip_count = safe_get(df, "vip_order_count", 0)
+    at_risk_count = safe_get(df, "at_risk_order_count", 0)
+
+    df["customer_demand_gap"] = total_req_qty - total_conf_qty
+    df["customer_confirmation_rate"] = total_conf_qty / (total_req_qty + 1e-6)
+    df["vip_order_ratio"] = vip_count / (n_cust_orders + 1e-6)
+    df["at_risk_order_ratio"] = at_risk_count / (n_cust_orders + 1e-6)
+
+    # NEW: Work centre capacity derived features
+    avg_wc_util = safe_get(df, "avg_wc_utilization", 70)
+    avg_wc_down = safe_get(df, "avg_wc_downtime", 0)
+
+    df["capacity_constraint_flag"] = (avg_wc_util > 80).astype(int)
+    df["high_downtime_flag"] = (avg_wc_down > 0.5).astype(int)
 
     # Label encoding
     if "material_no" in df.columns:
@@ -282,9 +365,9 @@ def predict(request: PredictRequest):
             business_output = apply_business_rules(ml_flag, ml_prob, demand_gap)
 
             preds.append({
-                "material_no": rec.get("material_no"),
-                "week_no": rec.get("week_no"),
-                "scenario": rec.get("scenario"),
+                "material_no": rec.material_no,
+                "week_no": rec.week_no,
+                "scenario": rec.scenario,
                 "ml_forecast_qty": round(forecast_qtys[i], 2),
                 "ml_shortage_probability": round(ml_prob, 4),
                 "ml_shortage_flag": business_output["final_flag"],
@@ -302,10 +385,22 @@ def predict(request: PredictRequest):
 
 @app.get("/health")
 def health():
-    """Health check endpoint."""
+    """Health check endpoint with model version and training timestamp."""
+    import os
+    from datetime import datetime
+
+    # Get training timestamp from model files
+    model_path = ARTIFACTS_DIR / "model_shortage_unified.pkl"
+    training_timestamp = None
+    if model_path.exists():
+        mtime = os.path.getmtime(model_path)
+        training_timestamp = datetime.fromtimestamp(mtime).isoformat()
+
     return {
         "status": "ok",
+        "version": "5.0",
         "models_loaded": all([gbr, rf_shortage]),
+        "training_timestamp": training_timestamp,
         "model_types": {
             "order_qty": type(gbr).__name__ if gbr else None,
             "shortage": type(rf_shortage).__name__ if rf_shortage else None,

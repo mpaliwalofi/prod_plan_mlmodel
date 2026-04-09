@@ -33,7 +33,23 @@
     "quality_risk_score",
     "supplier_risk_flag",
     "delay_signal",
-    "demand_gap"
+    "demand_gap",
+    "total_requested_qty",
+    "total_confirmed_qty",
+    "n_customer_orders",
+    "vip_order_count",
+    "at_risk_order_count",
+    "customer_demand_gap",
+    "customer_confirmation_rate",
+    "vip_order_ratio",
+    "at_risk_order_ratio",
+    "avg_wc_utilization",
+    "avg_wc_downtime",
+    "avg_wc_delay",
+    "avg_wc_overload",
+    "max_wc_utilization",
+    "capacity_constraint_flag",
+    "high_downtime_flag"
   ],
   "shortage": [
     "week_no",
@@ -64,6 +80,18 @@
     "below_safety_stock",
     "below_reorder",
     "supplier_risk_flag",
-    "delay_signal"
+    "delay_signal",
+    "total_confirmed_qty",
+    "n_customer_orders",
+    "vip_order_count",
+    "at_risk_order_count",
+    "customer_confirmation_rate",
+    "vip_order_ratio",
+    "at_risk_order_ratio",
+    "avg_wc_utilization",
+    "avg_wc_overload",
+    "max_wc_utilization",
+    "capacity_constraint_flag",
+    "high_downtime_flag"
   ]
 }

@@ -1,8 +1,10 @@
 {
   "model_order_qty_forecast": {
-    "mae": 13.7183,
-    "rmse": 23.1892,
-    "r2": 0.9717
+    "mae": 14.2049,
+    "rmse": 24.9086,
+    "r2": 0.9674,
+    "cv_r2_mean": 0.9475,
+    "cv_r2_std": 0.0247
   },
   "model_shortage_unified": {
     "roc_auc": 1.0,
