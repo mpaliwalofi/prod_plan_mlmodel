@@ -1,0 +1,19 @@
+{
+  "input": {
+    "material_no": "M-1192",
+    "week_no": 5,
+    "scenario": "NORMAL",
+    "forecast_qty": 150.0,
+    "stock_level": 50.0,
+    "replenishment_order_qty": 80.0
+  },
+  "output": {
+    "ml_forecast_qty": 144.18,
+    "ml_shortage_probability": 0.9442,
+    "ml_shortage_flag": 1,
+    "demand_gap": 14.18,
+    "recommended_order_qty": 14.18,
+    "risk_level": "High",
+    "reason": "Demand exceeds supply by 14.18 units"
+  }
+}

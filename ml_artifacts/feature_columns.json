@@ -32,9 +32,10 @@
     "below_reorder",
     "quality_risk_score",
     "supplier_risk_flag",
-    "delay_signal"
+    "delay_signal",
+    "demand_gap"
   ],
-  "classifier": [
+  "shortage": [
     "week_no",
     "material_encoded",
     "scenario_encoded",
@@ -46,6 +47,8 @@
     "stock_level",
     "reorder_point",
     "replenishment_order_qty",
+    "available_supply",
+    "demand_gap",
     "supplier_otif_pct",
     "avg_start_delay",
     "avg_overload_prob",
@@ -62,27 +65,5 @@
     "below_reorder",
     "supplier_risk_flag",
     "delay_signal"
-  ],
-  "probability": [
-    "week_no",
-    "material_encoded",
-    "scenario_encoded",
-    "forecast_qty",
-    "historical_avg_qty",
-    "seasonal_index",
-    "confidence_score",
-    "supplier_lead_time_days",
-    "stock_level",
-    "reorder_point",
-    "supplier_otif_pct",
-    "avg_overload_prob",
-    "avg_scrap_risk",
-    "qty_deviation_pct",
-    "stock_coverage_weeks",
-    "below_safety_stock",
-    "below_reorder",
-    "supplier_risk_flag",
-    "otif_pct",
-    "risk_score_m5"
   ]
 }
