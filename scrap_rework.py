@@ -172,8 +172,8 @@ class ScoreResponse(BaseModel):
     production_order_no: int
     scrap_risk_probability: float
     alert_level: str
-    predicted_scrap_pct: Optional[float] = None  # New: predicted scrap percentage
-    scrap_severity: Optional[str] = None  # New: severity flag
+    predicted_scrap_pct: Optional[float] = None
+    scrap_severity: Optional[str] = None
     timestamp: str
 
     # Context for LLM
@@ -272,7 +272,8 @@ def score_inspection(payload: InspectionPayload):
             production_order_no=payload.production_order_no,
             scrap_risk_probability=round(prob, 4),
             alert_level=alert_level,
-            predicted_scrap_pct=round(predicted_scrap_pct, 2) if predicted_scrap_pct else None,
+            # FIX: use 'is not None' to correctly handle predicted_scrap_pct == 0.0
+            predicted_scrap_pct=round(predicted_scrap_pct, 2) if predicted_scrap_pct is not None else None,
             scrap_severity=scrap_severity,
             timestamp=datetime.now().isoformat(),
             # Pass context for LLM
