@@ -7,6 +7,8 @@ Run: uvicorn scrap_risk_api:app --host 0.0.0.0 --port 8001
 
 This is the ONLY Python file needed - all training is done in scrap_rework.ipynb
 """
+import os
+import uvicorn
 
 import joblib
 import pandas as pd
@@ -341,5 +343,5 @@ def root():
 
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    port = int(os.getenv("PORT", 8000))  # fallback for local testing
+    uvicorn.run(app, host="0.0.0.0", port=port)
