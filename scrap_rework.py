@@ -26,6 +26,7 @@ app = FastAPI(
 
 # Global variables
 model = None
+reg_model = None  # Regression model for scrap percentage
 features = None
 encodings = None
 MODELS_DIR = Path("models")
@@ -40,24 +41,35 @@ DEFECT_MAP = {
 
 @app.on_event("startup")
 def load_models():
-    """Load ML model and features on startup."""
-    global model, features, encodings
+    """Load ML models and features on startup."""
+    global model, reg_model, features, encodings
 
     try:
         model_path = MODELS_DIR / "scrap_risk_m5.pkl"
+        reg_model_path = MODELS_DIR / "scrap_pct_regressor.pkl"
         features_path = MODELS_DIR / "scrap_risk_m5_features.pkl"
         encodings_path = MODELS_DIR / "scrap_risk_m5_encodings.pkl"
 
         if not model_path.exists():
             raise FileNotFoundError(f"Model not found: {model_path}. Run scrap_rework.ipynb first!")
 
+        # Load classifier
         model = joblib.load(model_path)
         features = joblib.load(features_path)
         encodings = joblib.load(encodings_path)
 
-        print("Model loaded successfully")
+        print("✓ Classifier loaded successfully")
         print(f"  Type: {type(model).__name__}")
         print(f"  Features: {len(features)}")
+
+        # Load regressor (optional - for scrap percentage prediction)
+        if reg_model_path.exists():
+            reg_model = joblib.load(reg_model_path)
+            print("✓ Regressor loaded successfully")
+            print(f"  Type: {type(reg_model).__name__}")
+        else:
+            print("⚠ Regressor not found - scrap_pct will not be predicted")
+            reg_model = None
 
     except Exception as e:
         print(f"Error loading model: {e}")
@@ -160,6 +172,8 @@ class ScoreResponse(BaseModel):
     production_order_no: int
     scrap_risk_probability: float
     alert_level: str
+    predicted_scrap_pct: Optional[float] = None  # New: predicted scrap percentage
+    scrap_severity: Optional[str] = None  # New: severity flag
     timestamp: str
 
     # Context for LLM
@@ -219,7 +233,7 @@ def encode_row(data: dict) -> dict:
 
 @app.post("/score", response_model=ScoreResponse)
 def score_inspection(payload: InspectionPayload):
-    """Score an inspection lot for scrap risk."""
+    """Score an inspection lot for scrap risk and predict scrap percentage."""
     try:
         # Encode features
         row = encode_row(payload.model_dump())
@@ -227,7 +241,7 @@ def score_inspection(payload: InspectionPayload):
         # Build feature vector
         X = pd.DataFrame([row])[features].fillna(0)
 
-        # Predict
+        # Predict scrap risk probability (classifier)
         prob = float(model.predict_proba(X)[0, 1])
 
         # Determine alert level
@@ -238,11 +252,28 @@ def score_inspection(payload: InspectionPayload):
         else:
             alert_level = 'OK'
 
+        # Predict scrap percentage (regressor) if available
+        predicted_scrap_pct = None
+        scrap_severity = None
+
+        if reg_model is not None:
+            predicted_scrap_pct = float(reg_model.predict(X)[0])
+
+            # Determine scrap severity
+            if predicted_scrap_pct >= 10.0:
+                scrap_severity = 'HIGH (Red)'
+            elif predicted_scrap_pct >= 5.0:
+                scrap_severity = 'MEDIUM (Yellow)'
+            else:
+                scrap_severity = 'LOW (Green)'
+
         return ScoreResponse(
             inspection_lot=payload.inspection_lot,
             production_order_no=payload.production_order_no,
             scrap_risk_probability=round(prob, 4),
             alert_level=alert_level,
+            predicted_scrap_pct=round(predicted_scrap_pct, 2) if predicted_scrap_pct else None,
+            scrap_severity=scrap_severity,
             timestamp=datetime.now().isoformat(),
             # Pass context for LLM
             defect_type=payload.defect_type,

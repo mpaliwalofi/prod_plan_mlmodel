@@ -1,9 +1,9 @@
 {
-  "auc_roc": 0.9950980392156863,
-  "accuracy": 0.97,
-  "training_samples": 800,
-  "test_samples": 200,
+  "auc_roc": 0.991919191919192,
+  "accuracy": 0.9375,
+  "training_samples": 189,
+  "test_samples": 48,
   "feature_count": 22,
   "model_version": "1.0.0",
-  "training_date": "2026-04-10T00:37:23.798406"
+  "training_date": "2026-04-10T16:29:48.418623"
 }
