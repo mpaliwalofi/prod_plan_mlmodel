@@ -19,7 +19,8 @@ Models:
   label_encoder_scenario.pkl    → LabelEncoder
   feature_columns.json          → {"regression": [...], "shortage": [...]}
 """
-
+import os
+import uvicorn
 import json
 import joblib
 import numpy as np
@@ -474,6 +475,7 @@ def root():
     }
 
 
+
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))  # 8000 is only for local testing
+    uvicorn.run(app, host="0.0.0.0", port=port)
